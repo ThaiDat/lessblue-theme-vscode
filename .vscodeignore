@@ -5,3 +5,7 @@
 **/Thumbs.db
 node_modules/**
 **/*.vsix
+
+# Screenshot is linked from the README via raw.githubusercontent.com, so the
+# Marketplace never needs a copy of it. assets/icon.png must stay.
+assets/test.png
