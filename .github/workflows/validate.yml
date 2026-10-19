@@ -91,7 +91,10 @@ jobs:
           PY
 
       - name: Build .vsix
-        run: npx vsce package --out dist/validate.vsix
+        run: |
+          mkdir -p dist
+          npx vsce package --out dist/validate.vsix
+          ls -l dist
 
       - name: Upload .vsix artifact
         uses: actions/upload-artifact@v4
