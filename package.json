@@ -5,9 +5,14 @@
   "version": "0.1.0",
   "publisher": "ThaiDat",
   "license": "MIT",
+  "icon": "assets/icon.png",
+  "homepage": "https://github.com/ThaiDat/lessblue-theme-vscode#readme",
+  "bugs": {
+    "url": "https://github.com/ThaiDat/lessblue-theme-vscode/issues"
+  },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ThaiDat/lessblue-theme"
+    "url": "https://github.com/ThaiDat/lessblue-theme-vscode"
   },
   "engines": {
     "vscode": "^1.80.0"
@@ -19,8 +24,13 @@
     "theme",
     "dark",
     "low-chroma",
-    "warm"
+    "warm",
+    "lessblue"
   ],
+  "galleryBanner": {
+    "color": "#1D1B19",
+    "theme": "dark"
+  },
   "contributes": {
     "themes": [
       {
@@ -29,5 +39,12 @@
         "path": "./themes/lessblue-color-theme.json"
       }
     ]
+  },
+  "scripts": {
+    "package": "vsce package",
+    "publish": "vsce publish"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "^4.0.0"
   }
 }

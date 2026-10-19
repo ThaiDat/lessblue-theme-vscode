@@ -1,6 +1,6 @@
 {
   "$schema": "vscode://schemas/color-theme",
-  "name": "Emberhold (Warm Charcoal, Evidence-Limited)",
+  "name": "LessBlue",
   "type": "dark",
   "colors": {
     "editor.background": "#1D1B19",

@@ -1,0 +1,101 @@
+name: Validate
+
+on:
+  push:
+    branches:
+      - main
+    tags-ignore:
+      - "v*"
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate extension
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Validate manifest and theme files
+        run: |
+          python3 - <<'PY'
+          import json, re, sys
+
+          HEX = re.compile(r"^#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$")
+          errors = []
+
+          with open("package.json", encoding="utf-8") as fh:
+              pkg = json.load(fh)
+
+          themes = pkg.get("contributes", {}).get("themes", [])
+          if not themes:
+              errors.append("package.json: contributes.themes is empty")
+
+          for theme in themes:
+              rel = theme.get("path", "").removeprefix("./")
+              try:
+                  with open(rel, encoding="utf-8") as fh:
+                      parsed = json.load(fh)
+              except FileNotFoundError:
+                  errors.append(f"missing theme file: {rel}")
+                  continue
+              except json.JSONDecodeError as exc:
+                  errors.append(f"{rel}: invalid JSON ({exc})")
+                  continue
+
+              colors = parsed.get("colors", {})
+              if not colors:
+                  errors.append(f"{rel}: no colors")
+              for key, value in colors.items():
+                  if not isinstance(value, str) or not HEX.match(value):
+                      errors.append(f'{rel}: {key} is not a hex color ("{value}")')
+
+              tokens = parsed.get("tokenColors", [])
+              if not tokens:
+                  errors.append(f"{rel}: no tokenColors")
+              for index, token in enumerate(tokens):
+                  if not token.get("scope"):
+                      errors.append(f"{rel}: tokenColors[{index}] has no scope")
+                  if not token.get("settings"):
+                      errors.append(f"{rel}: tokenColors[{index}] has no settings")
+
+          for path in ["README.md", "LICENSE", pkg.get("icon")]:
+              if not path:
+                  continue
+              try:
+                  with open(path, encoding="utf-8"):
+                      pass
+              except FileNotFoundError:
+                  errors.append(f"missing {path}")
+
+          for error in errors:
+              print(f"::error::{error}")
+          if errors:
+              sys.exit(1)
+
+          print(f"Validated {len(themes)} theme file(s).")
+          PY
+
+      - name: Build .vsix
+        run: npx vsce package --out dist/validate.vsix
+
+      - name: Upload .vsix artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vsix-dry-run
+          path: dist/*.vsix
+          if-no-files-found: error

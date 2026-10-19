@@ -1,2 +1,7 @@
 .vscode/**
+.github/**
 .gitignore
+**/.DS_Store
+**/Thumbs.db
+node_modules/**
+**/*.vsix
